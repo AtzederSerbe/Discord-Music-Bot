@@ -10,7 +10,7 @@ using System.Linq;
 
 namespace DiscordMusicBot.Core.Services
 {
-    public class AudioService 
+    public class AudioService
     {
         private LavaPlayer player;
         private LavaSocketClient lavaSocketClient;
@@ -23,75 +23,69 @@ namespace DiscordMusicBot.Core.Services
             lavaSocketClient = _lavaSocketClient;
             lavaRestClient = _lavaRestClient;
             isSearching = false;
-            searchedTracks = new List<LavaTrack>();
+
         }
 
 
 
-        public async Task<string> PlayAsync(string query,ulong guildId,IVoiceChannel voiceChannel)
+        public async Task<string> SearchAsync(string query)
         {
-            if (!isSearching)
+            searchedTracks = new List<LavaTrack>();
+            var search = await lavaRestClient.SearchYouTubeAsync(query);
+            if (search.LoadType == LoadType.NoMatches ||
+                search.LoadType == LoadType.LoadFailed)
             {
-                var search = await lavaRestClient.SearchYouTubeAsync(query);
-                if (search.LoadType == LoadType.NoMatches ||
-                    search.LoadType == LoadType.LoadFailed)
-                {
-                    return "Nothing found";
+                return "Nothing found";
 
-                }
-
-                var tracks = search.Tracks.Take(9).ToList();
-                searchedTracks.AddRange(tracks);
-                string tracksToChoose = String.Empty;
-                for (int i = 0; i < tracks.Count(); ++i)
-                {
-                    tracksToChoose += "`" + i + "`" + "\t" + tracks[i].Title.Replace("`", "\\`") + " by " + tracks[i].Author.Replace("`", "``") + "\n";
-                }
-
-                isSearching = true;
-                return tracksToChoose;
             }
-            else
-            {
-                if (lavaSocketClient.ServerStats == null)
-                {
-                    await lavaSocketClient.ConnectAsync(voiceChannel);
-                }
-                if (player == null)
-                {
-                    player = lavaSocketClient.GetPlayer(guildId);
-                }
-                var choice = int.MinValue;
-                if (int.TryParse(query, out choice))
-                {
-                    if (choice >= 0 && choice < 9)
-                    {
-                        var track = searchedTracks[choice];
-                        if (player.IsPlaying)
-                        {
-                            player.Queue.Enqueue(track);
-                            isSearching = false;
-                            return $"{track.Title} has been queued.";
 
-                        }
-                        else
-                        {
-                            await player.PlayAsync(track);
-                            isSearching = false;
-                            return $"Now Playing: {track.Title}";
-                        }
-                    }
-                    else
-                    {
-                        return "Please choose a number between 0 and 8";
-                    }
+            var tracks = search.Tracks.Take(9).ToList();
+            searchedTracks.AddRange(tracks);
+            string tracksToChoose = String.Empty;
+            for (int i = 0; i < tracks.Count(); ++i)
+            {
+                tracksToChoose += "`" + i + "`" + "\t" + tracks[i].Title.Replace("`", "\\`") + " by " + tracks[i].Author.Replace("`", "``") + "\n";
+            }
+
+            isSearching = true;
+            return tracksToChoose;
+        }
+
+        public async Task<string> PlayAsync(int query, IVoiceChannel voiceChannel, ulong guildId)
+        {
+            if (lavaSocketClient.ServerStats == null)
+            {
+                await lavaSocketClient.ConnectAsync(voiceChannel);
+            }
+            if (player == null)
+            {
+                player = lavaSocketClient.GetPlayer(guildId);
+            }
+
+            if (query >= 0 && query < 9)
+            {
+                var track = searchedTracks[query];
+                if (player.IsPlaying)
+                {
+                    player.Queue.Enqueue(track);
+                    isSearching = false;
+                    return $"{track.Title} has been queued.";
+
                 }
                 else
                 {
-                    return "Please choose a valid number";
+                    await player.PlayAsync(track);
+                    isSearching = false;
+                    return $"Now Playing: {track.Title}";
                 }
             }
+            else
+            {
+                return "Please choose a number between 0 and 8";
+            }
         }
+
+
 
         //[Command("Pay", RunMode = RunMode.Async)]
         //public async Task PlayAsync(params string[] queries)
@@ -112,7 +106,8 @@ namespace DiscordMusicBot.Core.Services
         public async Task<string> SkipAsync()
         {
             var skipped = await player.SkipAsync();
-            return($"Skipped: {skipped.Title}\nNow Playing: {player.CurrentTrack.Title}");
+            return ($"Skipped: {skipped.Title}\nNow Playing: {player.CurrentTrack.Title}");
         }
     }
 }
+

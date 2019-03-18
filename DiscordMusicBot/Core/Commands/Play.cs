@@ -32,8 +32,16 @@ namespace DiscordMusicBot.Core.Commands
             if (rq != null)
             {
                 ulong guildId = Context.Guild.Id;
-                await Context.Channel.SendMessageAsync(audioService.PlayAsync(rq,guildId,(Context.User as IGuildUser).VoiceChannel).Result);
+                await Context.Channel.SendMessageAsync(audioService.SearchAsync(rq).Result);
             }
+        }
+        [Command("choose"), Summary("Play the chosen music")]
+        public async Task ChooseCommand([Remainder] int rq )
+        {
+
+                ulong guildId = Context.Guild.Id;
+                await Context.Channel.SendMessageAsync(audioService.PlayAsync(rq, (Context.User as IGuildUser).VoiceChannel, guildId).Result);
+
         }
 
         [Command("skip"),Summary("Skip song")]
