@@ -114,11 +114,15 @@ namespace DiscordMusicBot.Core
         private async Task OnTrackFinished(LavaPlayer player, LavaTrack track, TrackEndReason reason)
         {
             if (!reason.ShouldPlayNext())
+            {
                 return;
+            }
 
             if (!player.Queue.TryDequeue(out var item) || !(item is LavaTrack nextTrack))
             {
+                await _lavaLink.DisconnectAsync(player.VoiceChannel);
                 await player.TextChannel?.SendMessageAsync($"There are no more items left in queue.");
+                await player.StopAsync();
                 return;
             }
 

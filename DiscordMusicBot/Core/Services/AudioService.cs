@@ -44,7 +44,7 @@ namespace DiscordMusicBot.Core.Services
             string tracksToChoose = String.Empty;
             for (int i = 0; i < tracks.Count(); ++i)
             {
-                tracksToChoose += "`" + i + "`" + "\t" + tracks[i].Title.Replace("`", "\\`") + " by " + tracks[i].Author.Replace("`", "``") + "\n";
+                tracksToChoose += "`" + i + "`" + "\t" + tracks[i].Title.Replace("`", "\\`") + " by " + tracks[i].Author.Replace("`", "``")+"\t "+tracks[i].Length + "\n";
             }
 
             isSearching = true;
@@ -53,10 +53,7 @@ namespace DiscordMusicBot.Core.Services
 
         public async Task<string> PlayAsync(int query, IVoiceChannel voiceChannel, ulong guildId)
         {
-            if (lavaSocketClient.ServerStats == null)
-            {
-                await lavaSocketClient.ConnectAsync(voiceChannel);
-            }
+            await lavaSocketClient.ConnectAsync(voiceChannel);
             if (player == null)
             {
                 player = lavaSocketClient.GetPlayer(guildId);
@@ -70,7 +67,6 @@ namespace DiscordMusicBot.Core.Services
                     player.Queue.Enqueue(track);
                     isSearching = false;
                     return $"{track.Title} has been queued.";
-
                 }
                 else
                 {
