@@ -40,7 +40,7 @@ namespace DiscordMusicBot.Core.Commands
         {
 
                 ulong guildId = Context.Guild.Id;
-                await Context.Channel.SendMessageAsync(audioService.PlayAsync(rq, (Context.User as IGuildUser).VoiceChannel, guildId).Result);
+                await Context.Channel.SendMessageAsync(audioService.PlayAsync(rq, (Context.User as IGuildUser).VoiceChannel,Context.Channel as ITextChannel, guildId).Result);
 
         }
 

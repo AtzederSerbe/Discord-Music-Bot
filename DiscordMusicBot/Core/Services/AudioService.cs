@@ -51,9 +51,9 @@ namespace DiscordMusicBot.Core.Services
             return tracksToChoose;
         }
 
-        public async Task<string> PlayAsync(int query, IVoiceChannel voiceChannel, ulong guildId)
+        public async Task<string> PlayAsync(int query, IVoiceChannel voiceChannel, ITextChannel textChannel, ulong guildId)
         {
-            await lavaSocketClient.ConnectAsync(voiceChannel);
+            await lavaSocketClient.ConnectAsync(voiceChannel,textChannel);
             if (player == null)
             {
                 player = lavaSocketClient.GetPlayer(guildId);
