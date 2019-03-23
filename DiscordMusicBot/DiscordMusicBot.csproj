@@ -15,7 +15,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.0.0-preview3.19153.1" />
     <PackageReference Include="NetEscapades.Configuration.Yaml" Version="1.6.0" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.6.0-preview3.19128.7" />
-    <PackageReference Include="Victoria" Version="4.0.4" />
+    <PackageReference Include="Victoria" Version="4.0.6" />
   </ItemGroup>
 
   <ItemGroup>

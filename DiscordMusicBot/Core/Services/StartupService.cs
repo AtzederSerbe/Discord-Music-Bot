@@ -53,7 +53,7 @@ namespace DiscordMusicBot.Core
             {
                 LogSeverity = LogSeverity.Debug,
                 ReconnectAttempts = 3,
-                Port = 2333
+                Port = 2333,
             });
 
         }
@@ -68,7 +68,7 @@ namespace DiscordMusicBot.Core
             Process.Start(new ProcessStartInfo
             {
                 CreateNoWindow = false,
-                Arguments = @"-jar Lavalink.jar",
+                Arguments = @"-jar Lavalink.jar -Xmx 1024m",
                 FileName = "java",
                 WorkingDirectory = Path.Combine(Directory.GetCurrentDirectory(), @"Ressources\"),
                 UseShellExecute = true
@@ -79,7 +79,7 @@ namespace DiscordMusicBot.Core
         {
             string discordToken = _config["tokens:discord"];     // Get the discord token from the config file
             if (string.IsNullOrWhiteSpace(discordToken))
-                throw new Exception("Please enter your bot's token into the `_configuration.json` file found in the applications root directory.");
+                throw new Exception("Please enter your bot's token into the `config.yml` file found in the applications root directory.");
 
             await _discord.LoginAsync(TokenType.Bot, discordToken);     // Login to discord
             await _discord.StartAsync();                                // Connect to the websocket
@@ -120,13 +120,14 @@ namespace DiscordMusicBot.Core
 
             if (!player.Queue.TryDequeue(out var item) || !(item is LavaTrack nextTrack))
             {
-                await _lavaLink.DisconnectAsync(player.VoiceChannel);
                 await player.TextChannel?.SendMessageAsync($"There are no more items left in queue.");
-                await player.StopAsync();
+                await _lavaLink.DisconnectAsync(player.VoiceChannel);
+                
                 return;
             }
 
             await player.PlayAsync(nextTrack);
+            await player.TextChannel?.SendMessageAsync($"Now playing: {nextTrack.Title}");
         }
 
         private Task OnTrackStuck(LavaPlayer player, LavaTrack track, long threshold)
